@@ -16,7 +16,7 @@ struct RepoManagementSheet: View {
     @State var enteredManifestURL = ""
     
     let recommendedRepos = [
-        "https://bomberfish.ca/PicassoRepos/Essentials/manifest.json",
+        "https://raw.githubusercontent.com/BomberFish/PicassoRepos/master/Essentials/manifest.json",
         "https://raw.githubusercontent.com/sourcelocation/Picasso-test-repo/main/manifest.json"
     ]
     
@@ -61,7 +61,7 @@ struct RepoManagementSheet: View {
                     }
                     .onDelete { index in
                         tweakRepoFetcher.manifestURLs.remove(atOffsets: index)
-                        UIApplication.shared.alert(title: "Refreshing...", body: "")
+                        UIApplication.shared.progressAlert(title: "Refreshing...")
                         Task {
                             try await tweakRepoFetcher.updateRepos()
                             UIApplication.shared.dismissAlert(animated: true)
@@ -124,34 +124,36 @@ struct RepoManagementSheet: View {
             .onAppear {
                 updateRecommends()
             }
-            .alert("Enter manifest URL of repo", isPresented: $showingURLEntryAlert) {
-                TextField("", text: $enteredManifestURL)
-                Button("Add") {
-                    tweakRepoFetcher.manifestURLs.append(enteredManifestURL)
-                    UIApplication.shared.alert(title: "Refreshing...", body: "")
-                    Task {
-                        try await tweakRepoFetcher.updateRepos()
-                        UIApplication.shared.dismissAlert(animated: true)
-                    }
-                }
-                .tint(.accentColor)
-                Button("Cancel", role: .cancel) {
-                    enteredManifestURL = ""
-                }
-                .tint(.accentColor)
-            }
             .toolbar {
-                HStack(alignment: .center) {
-                    Spacer()
-                    Button(action: {
-                        showingURLEntryAlert = true
-                    }, label: {
-                        Label("", systemImage: "plus")
-                    })
+                ToolbarItem(placement: .topBarTrailing) {
+                    HStack(alignment: .center) {
+                        Spacer()
+                        Button(action: {
+                            showingURLEntryAlert = true
+                        }, label: {
+                            Label("", systemImage: "plus")
+                        })
+                    }
                 }
             }
             .navigationTitle("Manage Repos")
             .navigationBarTitleDisplayMode(.inline)
+        }
+        .alert("Enter manifest URL of repo", isPresented: $showingURLEntryAlert) {
+            TextField("", text: $enteredManifestURL)
+            Button("Add") {
+                tweakRepoFetcher.manifestURLs.append(enteredManifestURL)
+                UIApplication.shared.progressAlert(title: "Refreshing...")
+                Task {
+                    try await tweakRepoFetcher.updateRepos()
+                    UIApplication.shared.dismissAlert(animated: true)
+                }
+            }
+            .tint(.accentColor)
+            Button("Cancel", role: .cancel) {
+                enteredManifestURL = ""
+            }
+            .tint(.accentColor)
         }
     }
     

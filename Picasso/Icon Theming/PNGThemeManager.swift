@@ -25,8 +25,12 @@ public class PNGThemeManager {
                     change.app.backUpPNGIcons()
                     try change.app.setPNGIcons(icon: icon)
                     
-                    if change.app.isSystem {
+                    if #available(iOS 17.0, *) {
                         try ExploitKit.shared.toggleCatalogCorruption(at: catalogURL, corrupt: true, usingExploit: true)
+                    } else {
+                        if change.app.isSystem {
+                            try ExploitKit.shared.toggleCatalogCorruption(at: catalogURL, corrupt: true, usingExploit: true)
+                        }
                     }
                 } else {
                     // revert

@@ -15,7 +15,7 @@ struct ThemeApplyProgressView: View {
     
     let images = ["safari", "folder", "gear", "message", "photo", "envelope", "camera", "calendar", "video", "map", "note.text", "waveform"]
     
-    var memePrefix = "https://bomberfish.ca/PicassoMemes/"
+    var memePrefix = "https://raw.githubusercontent.com/BomberFish/PicassoMemes/master/"
     var memes = [
         "1.webp",
         "2.webp",
@@ -254,20 +254,27 @@ struct ThemeApplyProgressView: View {
             } catch {
                 finishedWithErrors = true
                 DispatchQueue.main.async {
-                    Haptic.shared.notify(.success)
-//                    UIApplication.shared.confirmAlert(title: "Success, but some errors occurred", body: "Errors occured while applying icons for these applications:\n\n\(error.localizedDescription)",  confirmTitle: "Continue", onOK: {}, noCancel: true)
+                    Haptic.shared.notify(.warning)
                     fullError = error.localizedDescription
                     print(error)
                 }
             }
             withAnimation {
-//                finished = true
+                finished = true
             }
         }
     }
-    func restart() {
+    func restart() { 
+        Haptic.shared.play(.soft)
+        UIApplication.shared.progressAlert(title: "Rebuilding icon cache")
         removeIconCache()
-        respring()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            Haptic.shared.notify(.success)
+            UIApplication.shared.dismissAlert(animated: true)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                respring()
+            }
+        }
     }
 }
 

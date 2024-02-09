@@ -44,14 +44,17 @@ extension UIApplication {
     
     func progressAlert(title: String, body: String = "", animated: Bool = true, noCancel: Bool = true) {
         DispatchQueue.main.async {
-            currentUIAlertController = UIAlertController(title: title, message: body + "\n\n\n\n", preferredStyle: .alert)
+            currentUIAlertController = UIAlertController(title: title, message: body, preferredStyle: .alert)
+            if body != "" {
+                currentUIAlertController?.textFields?.forEach({$0.textAlignment = .left})
+            }
             
-            let indicator = UIActivityIndicatorView(frame: (currentUIAlertController?.view.bounds)!)
-            indicator.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+            let indicator = UIActivityIndicatorView(frame: CGRectMake(5,5,50,50))
+            indicator.hidesWhenStopped = true
+            indicator.style = .medium
+            indicator.startAnimating()
             
             currentUIAlertController?.view.addSubview(indicator)
-            indicator.isUserInteractionEnabled = false
-            indicator.startAnimating()
             
             if !noCancel { currentUIAlertController?.addAction(.init(title: "Cancel", style: .cancel)) }
             currentUIAlertController?.view.tintColor = UIColor(named: "AccentColor")
@@ -121,7 +124,7 @@ extension UIApplication {
         }
     }
     
-    func change(title: String = "Error", body: String, addCancelWithTitle: String? = nil, onCancel: @escaping () -> () = {}) {
+    func change(title: String = "Error", body: String, removeSubViews: Bool = true, addCancelWithTitle: String? = nil, onCancel: @escaping () -> () = {}) {
         var body = body
         
         if title == errorString {
@@ -133,6 +136,9 @@ extension UIApplication {
             body += "\n\n\(device.systemName) \(systemVersion), v\(appVersion), \(ExploitKit.shared.selectedExploit == .kfd ? methods[UserDefaults.standard.integer(forKey: "puafMethod")] : ExploitKit.shared.selectedExploit.rawValue)"
         }
         DispatchQueue.main.async {
+            if removeSubViews {
+                currentUIAlertController?.view.subviews.forEach({ $0.removeFromSuperview() }) // removes any spinners
+            }
             currentUIAlertController?.title = title
             currentUIAlertController?.message = body
             if let addCancelWithTitle {

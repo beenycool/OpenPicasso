@@ -240,7 +240,7 @@ struct PicassoApp: App {
     
     func exploitAndDRM() {
         Task {
-            UIApplication.shared.alert(title: "Logging in...", body: "This shouldn't take longer than 1 second.", withButton: false)
+            UIApplication.shared.progressAlert(title: "Logging in...")
             if sourcedRepoFetcher.userToken != nil {
                 do {
                     //                try await doDRMCheck(s: UserDefaults.standard.string(forKey: "userToken")!)
@@ -258,9 +258,9 @@ struct PicassoApp: App {
             }
             if TARGET_OS_SIMULATOR == 0 {
                 //            let messages = ["This shouldn't take long", "Praying to RNGesus", "Ultra secret message"]
-                if ExploitKit.shared.selectedExploit != .none {
-                    UIApplication.shared.change(title: "Exploiting...", body: "Praying to RNGesus" /* messages[(String(Int.random(in: 0...100000)).count - 1) / 2] */ )
-                }
+//                if ExploitKit.shared.selectedExploit != .none {
+                    UIApplication.shared.change(title: "Exploiting...", body: "Praying to RNGesus", removeSubViews: false /* messages[(String(Int.random(in: 0...100000)).count - 1) / 2] */ )
+//                }
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     
                     do {

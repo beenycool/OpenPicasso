@@ -18,7 +18,7 @@ public class TweakRepoFetcher: ObservableObject {
     public var manifestURLs: [String] {
         get {
             (UserDefaults.standard.array(forKey: "manifestURLs") as? [String]) ?? [
-                "https://bomberfish.ca/PicassoRepos/Essentials/manifest.json",
+                "https://raw.githubusercontent.com/BomberFish/PicassoRepos/master/Essentials/manifest.json",
                 "https://raw.githubusercontent.com/sourcelocation/Picasso-test-repo/main/manifest.json"
             ]
         } set {

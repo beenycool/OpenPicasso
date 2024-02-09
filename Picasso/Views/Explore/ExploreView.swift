@@ -30,6 +30,10 @@ struct ExploreView: View {
     
     @State var showSheet: Bool = false
     
+    @State var presentAlert = false
+    
+    @State var repoToAdd = ""
+    
     var body: some View {
             List {
                 Section {
@@ -50,7 +54,7 @@ struct ExploreView: View {
                             .cornerRadius(10)
                         }
                         Button {
-                            print("trolled")
+                           print("trolled")
                         } label: {
                             HStack {
                                 VStack(alignment: .leading, spacing: 4) {
@@ -147,6 +151,24 @@ struct ExploreView: View {
                     packages = allPackages.filter { $0.name.lowercased().contains(query) }
                 }
             }
+            .alert("Add Repo", isPresented: $presentAlert, actions: {
+                        TextField("URL", text: $repoToAdd)
+                    .keyboardType(.URL)
+                        Button("Add", action: {
+                            TweakRepoFetcher.shared.manifestURLs.append(repoToAdd)
+                            presentAlert = false
+                            repoToAdd = ""
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                refreshRepos()
+                            }
+                        })
+                        Button("Cancel", role: .cancel, action: {
+                            presentAlert = false
+                            repoToAdd = ""
+                        })
+                    }, message: {
+                        Text("Enter the URL of the repo you want to add.")
+                    })
     }
     
     func refreshRepos() {

@@ -47,33 +47,22 @@ public class ThemeManager: ObservableObject {
         
         var pngIconThemingOn = UserDefaults.standard.bool(forKey: "pngIconTheming")
         
-        if ExploitKit.shared.hasSystemOverwrite && pngIconThemingOn {
+        if #available(iOS 17.0, *) {
+            // Catalog theming is borked on 17.0
             do {
                 print("PNGs...")
                 UserDefaults.standard.set(true, forKey: "needsCatalogFixup")
-                try PNGThemeManager.shared.performChanges(changes) { (d,s) in
+                try PNGThemeManager.shared.performChanges(changes.filter { !$0.app.isSystem }) { (d,s) in // We can't write to system apps...
                     print(d,s)
                     progress("Applying using PNG method:\n\(s)", d * 100 / 3 + 0.0)
                 }
             } catch {
                 errors.append(error.localizedDescription)
             }
-        }
-        
-        do {
-            print("Catalogs...")
-            try CatalogThemeManager.shared.performChanges(changes.filter { !$0.app.isSystem }) { (d,s) in
-                print(d,s)
-                progress("Applying using Assets.car method:\n\(s)", d * 100 / 3 + 33.3)
-            }
-        } catch {
-            errors.append(error.localizedDescription)
-        }
-        
-        if !(ExploitKit.shared.hasSystemOverwrite && pngIconThemingOn) { // we dont need webclips if we can write to system apps
+            
             do {
                 print("Webclips...")
-                try WebClipThemeManager.shared.performChanges(changes.filter { $0.app.isSystem }) { (d,s) in
+                try WebClipThemeManager.shared.performChanges(changes.filter { $0.app.isSystem }) { (d,s) in // ...so we use webclips instead.
                     print(d,s)
                     progress("Applying using WebClips method:\n\(s)", d * 100 / 3 + 66.7)
                 }
@@ -81,11 +70,46 @@ public class ThemeManager: ObservableObject {
                 errors.append(error.localizedDescription)
             }
         } else {
+            if ExploitKit.shared.hasSystemOverwrite && pngIconThemingOn {
+                do {
+                    print("PNGs...")
+                    UserDefaults.standard.set(true, forKey: "needsCatalogFixup")
+                    try PNGThemeManager.shared.performChanges(changes) { (d,s) in
+                        print(d,s)
+                        progress("Applying using PNG method:\n\(s)", d * 100 / 3 + 0.0)
+                    }
+                } catch {
+                    errors.append(error.localizedDescription)
+                }
+            }
+            
             do {
-                print("Deleting Webclips...")
-                try WebClipThemeManager.shared.removeWebclips()
+                print("Catalogs...")
+                try CatalogThemeManager.shared.performChanges(changes.filter { !$0.app.isSystem }) { (d,s) in
+                    print(d,s)
+                    progress("Applying using Assets.car method:\n\(s)", d * 100 / 3 + 33.3)
+                }
             } catch {
                 errors.append(error.localizedDescription)
+            }
+            
+            if !(ExploitKit.shared.hasSystemOverwrite && pngIconThemingOn) { // we dont need webclips if we can write to system apps
+                do {
+                    print("Webclips...")
+                    try WebClipThemeManager.shared.performChanges(changes.filter { $0.app.isSystem }) { (d,s) in
+                        print(d,s)
+                        progress("Applying using WebClips method:\n\(s)", d * 100 / 3 + 66.7)
+                    }
+                } catch {
+                    errors.append(error.localizedDescription)
+                }
+            } else {
+                do {
+                    print("Deleting Webclips...")
+                    try WebClipThemeManager.shared.removeWebclips()
+                } catch {
+                    errors.append(error.localizedDescription)
+                }
             }
         }
         
