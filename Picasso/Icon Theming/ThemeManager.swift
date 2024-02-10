@@ -46,23 +46,12 @@ public class ThemeManager: ObservableObject {
         var errors: [String] = []
         
         var pngIconThemingOn = UserDefaults.standard.bool(forKey: "pngIconTheming")
+        var forceWebClips = UserDefaults.standard.bool(forKey: "forceWebClipsForEverything")
         
-        if #available(iOS 17.0, *) {
-            // Catalog theming is borked on 17.0
-            do {
-                print("PNGs...")
-                UserDefaults.standard.set(true, forKey: "needsCatalogFixup")
-                try PNGThemeManager.shared.performChanges(changes.filter { !$0.app.isSystem }) { (d,s) in // We can't write to system apps...
-                    print(d,s)
-                    progress("Applying using PNG method:\n\(s)", d * 100 / 3 + 0.0)
-                }
-            } catch {
-                errors.append(error.localizedDescription)
-            }
-            
+        if forceWebClips {
             do {
                 print("Webclips...")
-                try WebClipThemeManager.shared.performChanges(changes.filter { $0.app.isSystem }) { (d,s) in // ...so we use webclips instead.
+                try WebClipThemeManager.shared.performChanges(changes) { (d,s) in // ...so we use webclips instead.
                     print(d,s)
                     progress("Applying using WebClips method:\n\(s)", d * 100 / 3 + 66.7)
                 }

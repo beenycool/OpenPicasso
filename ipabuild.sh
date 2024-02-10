@@ -24,6 +24,11 @@ rm -rf build
 # rm -rf bin
 
 rm -rf Picasso_obfuscated*
+
+# try removing *.ipa, but don't fail if there are no files
+if ls *.ipa 1> /dev/null 2>&1; then
+    rm -rf *.ipa
+fi
 # try removing *.tipa, but don't fail if there are no files
 if ls *.tipa 1> /dev/null 2>&1; then
     rm -rf *.tipa

@@ -31,6 +31,11 @@ class ApplicationManager {
         
         var apps: [SBApp] = []
         
+        var lsApps: [LSApplicationProxy]?
+        if ExploitKit.shared.isTrollStore {
+            lsApps = LSApplicationWorkspace.default().allApplications()
+        }
+        
         for bundleUrl in dotAppDirs {
             let infoPlistUrl = bundleUrl.appendingPathComponent("Info.plist")
             
@@ -38,12 +43,19 @@ class ApplicationManager {
             guard let CFBundleIdentifier = infoPlist["CFBundleIdentifier"] as? String else { throw "No bundle ID for \(bundleUrl.absoluteString)" }
             var app = SBApp(bundleIdentifier: CFBundleIdentifier, name: "Unknown", version: infoPlist["CFBundleShortVersionString"] as? String ?? "1", bundleURL: bundleUrl, pngIconPaths: [], hiddenFromSpringboard: false, mountedPoint: (url: .init(string: "/")!, vnode: 0))
             
-            if infoPlist.keys.contains("CFBundleDisplayName") {
+            let bundleIDComponents = (infoPlist["CFBundleIdentifier"] as! String).components(separatedBy: ".")
+            let guessedName = bundleIDComponents[safe: 2] ?? bundleIDComponents[safe: 1] ?? "Unknown" // better guess at app name using bundleID
+            
+            if ExploitKit.shared.isTrollStore {
+                app.name = (lsApps?.first(where: {$0.bundleIdentifier == infoPlist["CFBundleIdentifier"] as? String}))?.localizedName() ?? guessedName
+            } else if infoPlist.keys.contains("CFBundleDisplayName") {
                 guard let CFBundleDisplayName = infoPlist["CFBundleDisplayName"] as? String else { throw "Error reading display name for \(bundleUrl.absoluteString)" }
                 app.name = CFBundleDisplayName
             } else if infoPlist.keys.contains("CFBundleName") {
                 guard let CFBundleName = infoPlist["CFBundleName"] as? String else { throw "Error reading name for \(bundleUrl.absoluteString)" }
                 app.name = CFBundleName
+            } else {
+                app.name = guessedName
             }
             
             // obtaining png icons inside bundle. defined in info.plist

@@ -10,6 +10,7 @@ import SwiftUI
 struct ThemingSettingsView: View {
     
     @AppStorage("pngIconTheming") var pngIconThemingOn = false
+    @AppStorage("forceWebClipsForEverything") var forceWebClipsForEverything = false
     
     var body: some View {
         Navigator {
@@ -24,6 +25,8 @@ struct ThemingSettingsView: View {
                             }, destructActionText: "Enable")
                         }
                     }
+                    .tint(.accentColor)
+                Toggle("Force Web Clip theming for all apps", isOn: $forceWebClipsForEverything)
                     .tint(.accentColor)
             }
             .navigationTitle("Theming Options")
